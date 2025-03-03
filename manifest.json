@@ -1,0 +1,32 @@
+{
+  "manifest_version": 2,
+  "name": "Cargomatic dev",
+  "version": "1.0.2",
+  "permissions": [
+    "activeTab",
+    "declarativeContent",
+    "storage",
+    "https://*/*",
+    "http://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://relay.amazon.com/*",
+        "https://relay.amazon.co.uk/*",
+        "https://relay.amazon.it/*",
+        "https://relay.amazon.de/*",
+        "https://relay.amazon.fr/*",
+        "https://relay.amazon.jp/*"
+      ],
+      "js": [
+        "build/load.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icon.png"
+  },
+  "web_accessible_resources": ["assets/img/*.png"]
+}
