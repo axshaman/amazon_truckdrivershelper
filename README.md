@@ -1,160 +1,64 @@
-Here is a detailed `README.md` file for your browser extension **Amazon Truck Drivers Assistant**. This document includes project structure, functionality description, setup instructions, and how to customize it for personal use.
+# Amazon Relay Assistant
 
----
-
-# Amazon Truck Drivers Assistant
-
-Amazon Truck Drivers Assistant is a browser extension designed to enhance and automate the workflow for truck drivers using Amazon Relay. The extension helps drivers monitor and manage available work opportunities by automatically refreshing and booking loads based on user-defined criteria.
-
-## Table of Contents
-
-- [Project Overview](#project-overview)
-- [Features](#features)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Project Structure](#project-structure)
-- [Customization](#customization)
-- [Build & Deployment](#build--deployment)
-- [License](#license)
-
-## Project Overview
-
-The extension interacts with Amazon Relay’s load board, automating tasks such as refreshing available loads, filtering options, and auto-booking. It integrates Vue.js for UI components and uses Webpack Encore for asset management.
+Amazon Relay Assistant is a Chrome browser extension that streamlines load hunting on Amazon Relay. It injects a floating control panel directly into the load board so you can automate refreshes, filter out unwanted lanes, receive audible alerts for new matches and even auto-book a configurable number of loads.
 
 ## Features
-
-- **Automatic Load Refreshing**: Periodically refreshes the available work list.
-- **Customizable Interval**: Users can adjust the refresh interval via the UI.
-- **Auto-Booking**: Ability to book the first available load based on preset conditions.
-- **State Filtering**: Users can specify states to exclude from load selection.
-- **Mode Selection**: Choose between manual and automatic booking modes.
-- **Popup UI**: Displays load status and control options.
-- **Vue.js Integration**: Provides a reactive UI experience.
-- **Uses Webpack Encore**: Manages dependencies and assets efficiently.
+- **Floating control panel** with start/stop controls, live telemetry and one-click manual refresh.
+- **Configurable refresh cadence** (500 ms – 5 minutes) with countdown feedback.
+- **Skip state filters** that dim unwanted loads without touching the underlying page markup.
+- **Optional auto-booking** with configurable booking limits per cycle and visual markers for booked cards.
+- **Audio and visual signalling** for newly discovered opportunities, plus the ability to disable either at any time.
+- **Chrome storage synchronisation** so preferences persist across sessions and tabs.
+- **Message-driven runtime API** (documented in [`docs/openapi.yaml`](docs/openapi.yaml)) for companion tooling and diagnostics.
+- **Minimal permissions** – the extension now bundles all assets locally and only requires `storage` access.
 
 ## Installation
-
-### Prerequisites
-
-- Node.js (Latest LTS recommended)
-- npm or yarn
-- Webpack Encore (for building the project)
-
-### Steps
-
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/your-username/amazon-truck-drivers-assistant.git
-   cd amazon-truck-drivers-assistant
-   ```
-
-2. Install dependencies:
-   ```sh
+1. Install dependencies (optional, only required when building from source):
+   ```bash
    npm install
    ```
-
-3. Build the extension:
-   ```sh
+2. Build the optional Vue assets (legacy popup) if desired:
+   ```bash
    npm run build
    ```
-   This compiles all assets and places them in the `build/` directory.
+   This step is not required to use the core assistant functionality.
+3. Open Chrome and navigate to `chrome://extensions`.
+4. Enable **Developer mode**.
+5. Click **Load unpacked** and select the repository folder.
 
-4. Load the extension into Chrome:
-   - Open **chrome://extensions/**
-   - Enable **Developer mode** (top right corner)
-   - Click **Load unpacked**
-   - Select the `build/` folder
+## Using the Assistant
+1. Navigate to the Amazon Relay load board (`relay.amazon.com` or a supported regional domain).
+2. The control panel appears in the bottom-right corner once the load board is detected.
+3. Configure your preferences:
+   - **Refresh interval** – milliseconds between automated refreshes.
+   - **Skip states** – comma-separated list of two-letter state abbreviations.
+   - **Auto book matching loads** – enable automatic booking and specify how many cards to attempt per cycle.
+   - **Play audio alerts / Highlight new loads** – toggle notification styles.
+   - **Start automatically** – auto-start when the load board becomes available.
+4. Press **Start** to begin automated refreshes or **Refresh now** for a one-off update.
 
-## Configuration
+The status block tracks the most recent refresh time, next scheduled refresh, visible/total load counts, skipped load totals and auto-book progress.
 
-The extension provides customization options through its UI. However, you can also modify configurations in the code.
+## Development Workflow
+- **Content script** lives in [`js/plugin_start.js`](js/plugin_start.js) and is responsible for UI rendering, DOM observation and automation.
+- **Background script** (`js/background.js`) exposes a small message-based API and keeps settings in sync via `chrome.storage`.
+- **Webpack Encore** continues to build the optional Vue assets under `assets/` (`npm run dev` / `npm run build`). These assets are not required for the new control panel but remain available for advanced UI customisation.
 
-### Adjust Refresh Interval
+### Scripts
+| Command | Description |
+| ------- | ----------- |
+| `npm run dev` | Builds assets once in development mode. |
+| `npm run watch` | Rebuilds assets when files change. |
+| `npm run dev-server` | Starts the Encore dev server (legacy Vue tooling). |
+| `npm run build` | Produces production-ready bundles in `build/`. |
 
-Edit `plugin_start.js`:
-```js
-this.timer = 5000; // Change refresh interval (milliseconds)
-```
+## Documentation
+- **Runtime API** – [`docs/openapi.yaml`](docs/openapi.yaml) details the message contracts for retrieving and updating settings and runtime status.
+- **Architecture** – [`docs/architecture.md`](docs/architecture.md) captures the C4 context, container, and component views of the extension.
 
-### Change Default Mode
+## Roadmap Ideas
+- Migrate to Manifest V3 with a service worker-based background script.
+- Expand filtering to support lane-specific preferences and price thresholds.
+- Surface historical telemetry in a popup or dashboard.
 
-Modify `plugin_start.js`:
-```js
-this.mode = 'manual'; // Options: 'manual', 'book'
-```
-
-### Exclude States
-
-Modify `loader_before.js`:
-```js
-<option value="CA">California</option>
-```
-Remove or add states as needed.
-
-## Project Structure
-
-```
-amazon-truck-drivers-assistant/
-│── assets/               # Source files for JavaScript and Vue components
-│   ├── app.js            # Main application logic
-│   ├── load.js           # Loader script for fetching external resources
-│   ├── form.vue          # Vue component for UI
-│── build/                # Compiled output (generated by Webpack)
-│── src/                  # Plugin source code
-│   ├── plugin.js         # Core plugin functionality
-│   ├── plugin_start.js   # Startup logic
-│   ├── loader_before.js  # Initial loader script
-│   ├── loader_after.js   # Post-processing loader script
-│── manifest.json         # Chrome extension manifest file
-│── webpack.config.js     # Webpack configuration
-│── package.json          # Dependencies and scripts
-│── README.md             # Documentation
-```
-
-## Customization
-
-### Changing Extension Name & Version
-
-Edit `manifest.json`:
-```json
-{
-  "name": "Amazon Truck Drivers Assistant",
-  "version": "1.0.2"
-}
-```
-
-### Modifying UI Components
-
-Edit `form.vue` to adjust the popup interface.
-
-### Adding More Features
-
-You can extend `plugin.js` to add additional automation features.
-
-## Build & Deployment
-
-To create a production-ready version:
-
-```sh
-npm run build
-```
-
-To watch for file changes and rebuild automatically:
-
-```sh
-npm run watch
-```
-
-To run a development server:
-
-```sh
-npm run dev-server
-```
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-This `README.md` provides all necessary information for users and developers working with your extension. Let me know if you need further refinements! 🚛💨
+Contributions and feedback are welcome via pull requests or issues.

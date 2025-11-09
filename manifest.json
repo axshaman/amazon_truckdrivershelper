@@ -1,14 +1,17 @@
 {
   "manifest_version": 2,
-  "name": "Cargomatic dev",
-  "version": "1.0.2",
+  "name": "Amazon Relay Assistant",
+  "description": "Productivity toolkit that refreshes, filters and optionally auto-books Amazon Relay loads with actionable insights.",
+  "version": "1.1.0",
   "permissions": [
-    "activeTab",
-    "declarativeContent",
-    "storage",
-    "https://*/*",
-    "http://*/*"
+    "storage"
   ],
+  "background": {
+    "scripts": [
+      "js/background.js"
+    ],
+    "persistent": false
+  },
   "content_scripts": [
     {
       "matches": [
@@ -20,13 +23,17 @@
         "https://relay.amazon.jp/*"
       ],
       "js": [
-        "build/load.js"
+        "js/plugin_start.js"
       ],
-      "run_at": "document_end"
+      "run_at": "document_idle"
     }
   ],
   "icons": {
-    "16": "icon.png"
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
   },
-  "web_accessible_resources": ["assets/img/*.png"]
+  "web_accessible_resources": [
+    "assets/img/*.png"
+  ]
 }
