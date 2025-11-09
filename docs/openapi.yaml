@@ -1,0 +1,202 @@
+openapi: 3.0.3
+info:
+  title: Amazon Relay Assistant Runtime API
+  version: 1.0.0
+  description: |
+    Message-based control surface exposed by the Amazon Relay Assistant browser extension.
+    
+    The API is consumed through `chrome.runtime.sendMessage` calls using the
+    namespace `amazonRelayAssistant`. Each operation maps to a message `type`
+    and optional `payload` structure as described below.
+servers:
+  - url: chrome-extension://{extensionId}
+    description: Amazon Relay Assistant runtime message bus
+    variables:
+      extensionId:
+        default: <generated>
+        description: Chrome-assigned extension identifier.
+paths:
+  /settings:
+    get:
+      summary: Read the persisted assistant settings
+      description: |
+        Retrieves the full configuration currently stored in `chrome.storage.local`.
+        Internally this maps to the `settings:get` message type.
+      operationId: getSettings
+      tags: [Settings]
+      responses:
+        '200':
+          description: Settings successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+    put:
+      summary: Replace the persisted assistant settings
+      description: |
+        Persists the provided configuration and normalises all numeric and
+        enumerated fields. This maps to the `settings:set` message type.
+      operationId: updateSettings
+      tags: [Settings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsUpdate'
+      responses:
+        '200':
+          description: Settings saved and broadcast to active tabs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+  /status:
+    get:
+      summary: Retrieve the most recent runtime status snapshot
+      description: |
+        Returns metadata describing the assistant's current execution state,
+        mirroring the `status:get` message type.
+      operationId: getStatus
+      tags: [Status]
+      responses:
+        '200':
+          description: Runtime status snapshot.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+    post:
+      summary: Merge a runtime status update
+      description: |
+        Updates the runtime telemetry maintained by the background script.
+        Payload data is merged with the existing snapshot. This maps to the
+        `status:update` message type.
+      operationId: updateStatus
+      tags: [Status]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusUpdate'
+      responses:
+        '200':
+          description: Updated runtime status after merge.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+components:
+  schemas:
+    Settings:
+      type: object
+      required:
+        - refreshInterval
+        - autoStart
+        - skipStates
+        - autoBook
+        - autoBookCount
+        - audioAlerts
+        - highlightNew
+      properties:
+        refreshInterval:
+          type: integer
+          minimum: 500
+          maximum: 300000
+          description: Interval in milliseconds between automatic refresh events.
+        autoStart:
+          type: boolean
+          description: Whether the assistant should start automatically when the load board is detected.
+        skipStates:
+          type: array
+          description: Two-letter state abbreviations to exclude when evaluating loads.
+          items:
+            type: string
+            pattern: '^[A-Z]{2}$'
+        autoBook:
+          type: boolean
+          description: Enables automatic booking of loads that are not filtered out.
+        autoBookCount:
+          type: integer
+          minimum: 1
+          description: Maximum number of loads to attempt to book per refresh cycle.
+        audioAlerts:
+          type: boolean
+          description: Toggles audible notifications for newly discovered loads.
+        highlightNew:
+          type: boolean
+          description: Highlights loads that have not been seen in the current session.
+    SettingsUpdate:
+      allOf:
+        - $ref: '#/components/schemas/Settings'
+      description: |
+        Full replacement payload. Missing fields fall back to defaults defined by
+        the extension before persistence.
+    Status:
+      type: object
+      description: Summary of the assistant's runtime activity.
+      properties:
+        running:
+          type: boolean
+          description: Indicates whether the assistant is actively refreshing.
+        lastRefreshAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: ISO 8601 timestamp of the most recent refresh event.
+        nextRefreshAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Scheduled time for the next refresh, if auto-refresh is enabled.
+        visibleLoads:
+          type: integer
+          nullable: true
+          description: Count of loads remaining after filtering.
+        totalLoads:
+          type: integer
+          nullable: true
+          description: Raw count of loads detected on the page.
+        skippedLoads:
+          type: integer
+          nullable: true
+          description: Loads hidden due to skip state filters.
+        autoBooked:
+          type: integer
+          nullable: true
+          description: Number of loads successfully auto-booked during the session.
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp of the latest status update.
+    StatusUpdate:
+      type: object
+      description: Partial update for runtime telemetry.
+      properties:
+        running:
+          type: boolean
+        lastRefreshAt:
+          type: string
+          format: date-time
+          nullable: true
+        nextRefreshAt:
+          type: string
+          format: date-time
+          nullable: true
+        visibleLoads:
+          type: integer
+          nullable: true
+        totalLoads:
+          type: integer
+          nullable: true
+        skippedLoads:
+          type: integer
+          nullable: true
+        autoBooked:
+          type: integer
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true

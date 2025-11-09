@@ -8,19 +8,19 @@
     "build": "encore production --progress"
   },
   "dependencies": {
-    "bootstrap": "^5.0.1",
+    "bootstrap": "^5.3.3",
     "es6-promise": "^4.2.8",
-    "exports-loader": "^3.0.0",
-    "imports-loader": "^3.0.0",
-    "vue": "^3.1.1",
+    "exports-loader": "^4.0.0",
+    "imports-loader": "^4.0.1",
+    "vue": "^3.4.21",
     "vue3-select2-component": "^0.1.7",
-    "whatwg-fetch": "^3.6.2"
+    "whatwg-fetch": "^3.6.20"
   },
   "devDependencies": {
-    "@symfony/webpack-encore": "^1.4.0",
-    "@vue/compiler-sfc": "^3.1.1",
-    "html-webpack-inline-source-plugin": "^0.0.10",
-    "html-webpack-plugin": "^5.3.1",
-    "vue-loader": "^16.1.0"
+    "@symfony/webpack-encore": "^4.5.0",
+    "@vue/compiler-sfc": "^3.4.21",
+    "html-webpack-inline-source-plugin": "^0.0.11",
+    "html-webpack-plugin": "^5.5.3",
+    "vue-loader": "^17.4.2"
   }
 }
